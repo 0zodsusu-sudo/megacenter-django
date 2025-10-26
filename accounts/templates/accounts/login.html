@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+  <div class="card shadow-sm rounded-4 p-4">
+    <h4 class="text-center mb-3">Вход</h4>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-success w-100">Войти</button>
+    </form>
+    <div class="text-center mt-3">
+      Нет аккаунта? <a href="{% url 'register' %}">Регистрация</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

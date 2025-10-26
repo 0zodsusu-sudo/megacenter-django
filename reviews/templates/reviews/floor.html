@@ -1,0 +1,102 @@
+{% extends 'reviews/base.html' %}
+{% load static %}
+
+{% block title %}{{ floor.name }} — Mega Center{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+
+      <!-- Carousel (Bootstrap) -->
+      <div id="floorCarousel" class="carousel slide mb-3" data-bs-ride="carousel" data-bs-interval="6000">
+        <div class="carousel-inner">
+          {% for img in floor.images.all %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <img src="{{ img.image.url }}" class="d-block w-100 floor-photo" alt="Фото этажа {{ floor.number }}">
+            </div>
+          {% empty %}
+            <div class="carousel-item active">
+              <img src="{% static 'reviews/img/placeholder-floor.jpg' %}" class="d-block w-100 floor-photo" alt="Заглушка">
+            </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#floorCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#floorCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+
+      <!-- Header and action -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h2 class="mb-1">{{ floor.name }}</h2>
+          <p class="text-muted mb-0">{{ floor.description }}</p>
+        </div>
+        <div>
+          <button class="btn btn-primary" id="open-review-modal">Оставить отзыв</button>
+        </div>
+      </div>
+
+      <!-- Reviews list -->
+      <h5 class="mt-4">Отзывы ({{ reviews.count }})</h5>
+      <div id="reviews-list">
+        {% for r in reviews %}
+          <div class="card mb-2">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <strong>{{ r.author }}</strong>
+                <small class="text-muted">{{ r.created_at|date:"d.m.Y H:i" }}</small>
+              </div>
+              <div class="my-2">Рейтинг: <span class="fw-bold">{{ r.rating }}/5</span></div>
+              <div>{{ r.text|linebreaksbr }}</div>
+              {% if r.admin_response %}
+                <div class="alert alert-light mt-2">Ответ администрации: {{ r.admin_response }}</div>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">Пока нет отзывов — будь первым!</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Elevator buttons (right vertical) -->
+<div class="elevator-panel" aria-hidden="false">
+  {% for f in floors %}
+    <a href="{% url 'reviews:floor_detail' number=f.number %}"
+       class="elevator-btn {% if f.number == floor.number %}active{% endif %}"
+       data-number="{{ f.number }}">
+      {% if f.number < 0 %}B{% else %}{{ f.number }}{% endif %}
+    </a>
+  {% endfor %}
+</div>
+
+<!-- Review Modal (Bootstrap) -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" id="reviewForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Оставить отзыв о {{ floor.name }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          {{ form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Отправить</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

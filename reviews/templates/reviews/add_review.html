@@ -1,0 +1,21 @@
+{% extends 'reviews/base.html' %}
+{% block title %}Оставить отзыв — {{ floor.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Оставить отзыв о {{ floor.name }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="rating" class="form-label">Оценка</label>
+            {{ form.rating }}
+        </div>
+        <div class="mb-3">
+            <label for="comment" class="form-label">Комментарий</label>
+            {{ form.comment }}
+        </div>
+        <button type="submit" class="btn btn-success">Отправить отзыв</button>
+        <a href="{% url 'floor_detail' floor.id %}" class="btn btn-secondary ms-2">Отмена</a>
+    </form>
+</div>
+{% endblock %}
