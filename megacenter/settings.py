@@ -15,7 +15,8 @@ SECRET_KEY = 'django-insecure-yk!fxq3-)k!*^fddgb6fhx*yyct)w!g0^elr6vom-#v7ad#hie
 # ⚠️ В продакшене нужно отключить DEBUG
 DEBUG = False
 
-ALLOWED_HOSTS = ['megacenter-uz.onrender.com', 'megacenter.uz', 'www.megacenter.uz']
+ALLOWED_HOSTS = ['megacenter.uz', 'www.megacenter.uz', 'megacenter.onrender.com']
+
 
 
 # -------------------------
