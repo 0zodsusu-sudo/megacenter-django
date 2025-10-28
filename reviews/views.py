@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Floor
 from .forms import ReviewForm
+from django.http import HttpResponse
+from django.core.management import call_command
 
 def floor_default(request):
     """Главная — редирект на первый этаж (number=1)."""
@@ -30,3 +32,7 @@ def floor_detail(request, number):
         'reviews': reviews,
         'form': form,
     })
+
+def migrate_now(request):
+    call_command('migrate', interactive=False)
+    return HttpResponse("✅ Миграции выполнены успешно!")
