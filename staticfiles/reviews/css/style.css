@@ -1,13 +1,41 @@
-/* --- Основное оформление фото --- */
-.floor-photo {
-  height: 420px;
-  object-fit: cover;
+/* Общий стиль */
+body {
+  background-color: #f9fbff;
+  font-family: 'Segoe UI', sans-serif;
+  color: #222;
 }
 
-/* --- Панель лифта (справа) --- */
+/* ====== Анимация лифта ====== */
+.elevator-doors {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #d3d3d3 49.5%, #c8c8c8 50.5%);
+  z-index: 1000;
+  transition: transform 1.5s ease;
+}
+.elevator-doors.open {
+  transform: translateX(-100%);
+}
+
+/* ====== Стрелка ====== */
+.arrow-indicator {
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  font-size: 2rem;
+  color: #ff7a00;
+  z-index: 1100;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+/* ====== Панель этажей ====== */
 .elevator-panel {
   position: fixed;
-  right: 18px;
+  right: 25px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -17,75 +45,110 @@
 }
 
 .elevator-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
+  display: flex;
   justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   text-decoration: none;
-  background: rgba(255,255,255,0.9);
-  color: #333;
-  border: 1px solid #ddd;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #63a4ff;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .elevator-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  background-color: #82b8ff;
+  transform: scale(1.1);
 }
 
 .elevator-btn.active {
-  background: #0d6efd;
+  background-color: #ff7a00;
+}
+
+/* ====== Галерея фото ====== */
+.carousel-inner img {
+  border-radius: 10px;
+  border: 3px solid #ff7a00;
+  object-fit: cover;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+}
+
+/* ====== Кнопка отзыва ====== */
+.btn-primary,
+.btn-outline-primary {
+  border-radius: 30px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #63a4ff;
+  border-color: #63a4ff;
+}
+.btn-primary:hover {
+  background-color: #82b8ff;
+}
+
+.btn-outline-primary {
+  color: #63a4ff;
+  border-color: #63a4ff;
+}
+.btn-outline-primary:hover {
+  background-color: #63a4ff;
   color: white;
-  border-color: #0b5ed7;
-  box-shadow: 0 4px 10px rgba(13,110,253,0.2);
 }
 
-/* --- Двери лифта (однотонные металлические) --- */
-.lift-door {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  z-index: 2000;
-  background-color: #5e5e5e; /* однородный тёмно-серый металл */
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3); /* лёгкий металлический объём */
-  transition: transform 1.3s cubic-bezier(.2,.7,.2,1); /* немного медленнее */
+/* ====== Модалка отзыва ====== */
+.modal-content {
+  border-radius: 15px;
+  border: 2px solid #63a4ff;
 }
 
-.lift-door.left { left: 0; transform: translateX(0); }
-.lift-door.right { right: 0; transform: translateX(0); }
-
-.lift-door.open.left { transform: translateX(-110%); }
-.lift-door.open.right { transform: translateX(110%); }
-
-/* --- Первая стеклянная дверь (эффект входа) --- */
-.glass-door {
-  position: fixed;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  background: rgba(200, 200, 200, 0.15);
-  backdrop-filter: blur(3px);
-  border-right: 2px solid rgba(220, 220, 220, 0.4);
-  z-index: 3000;
-  transition: transform 1.2s ease-in-out;
+.review-textarea {
+  border: none;
+  background-color: #eef6ff;
+  resize: none;
+  border-radius: 10px;
 }
 
-.glass-door.right {
-  left: 50%;
-  border-left: 2px solid rgba(220, 220, 220, 0.4);
-  border-right: none;
+/* ====== Карточки отзывов ====== */
+.review-card {
+  border: none;
+  border-left: 4px solid #63a4ff;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-.glass-door.open.left { transform: translateX(-100%); }
-.glass-door.open.right { transform: translateX(100%); }
+.admin-response {
+  background-color: #f1f8ff;
+  border-left: 3px solid #63a4ff;
+}
 
-/* --- Адаптивность --- */
+/* ====== Адаптивность ====== */
 @media (max-width: 768px) {
-  .elevator-panel { right: 8px; gap: 8px; }
-  .elevator-btn { width: 46px; height: 46px; }
+  .elevator-panel {
+    flex-direction: row;
+    right: 50%;
+    transform: translate(50%, 0);
+    bottom: 10px;
+    top: auto;
+  }
+  .elevator-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 0.9rem;
+  }
+  .arrow-indicator {
+    top: auto;
+    bottom: 70px;
+    right: 50%;
+    transform: translateX(50%);
+  }
 }
