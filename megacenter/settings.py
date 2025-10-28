@@ -1,7 +1,7 @@
 """
 Django settings for megacenter project.
 """
-
+import dj_database_ur
 from pathlib import Path
 import os
 
@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-yk!fxq3-)k!*^fddgb6fhx*yyct)w!g0^elr6vom-#v7ad#hie'
 
 # ⚠️ В продакшене нужно отключить DEBUG
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['megacenter.onrender.com', '127.0.0.1', 'localhost']
 
@@ -70,15 +70,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'megacenter.wsgi.application'
 
 # -------------------------
-# 💾 База данных
+# 💾 База данных (PostgreSQL на Render)
 # -------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
+DATABASES = {
+    'default': dj_database_url.config(
+        default='postgresql://megacenter_db_user:XoLDXNlAS6yH1ixC7k81mkxEV0Tc1YIO@dpg-d40e8hfgi27c73fgahj0-a.frankfurt-postgres.render.com/megacenter_db',
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 # -------------------------
 # 🔑 Валидация паролей
 # -------------------------
