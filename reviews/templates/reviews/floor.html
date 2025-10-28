@@ -1,67 +1,85 @@
-{% extends 'reviews/base.html' %}
-{% load static %}
-
-{% block title %}{{ floor.name }} — Mega Center{% endblock %}
+{% extends "reviews/base.html" %}
+{% block title %}Этаж {{ floor.number }} — {{ floor.name }}{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="floor-page py-3">
   <div class="row">
-    <div class="col-12">
-
-      <!-- Carousel (Bootstrap) -->
-      <div id="floorCarousel" class="carousel slide mb-3" data-bs-ride="carousel" data-bs-interval="6000">
+    <div class="col-lg-9">
+      <!-- Carousel -->
+      <div id="floorCarousel" class="carousel slide shadow-sm rounded" data-bs-ride="carousel" data-bs-interval="6000" data-bs-pause="false">
         <div class="carousel-inner">
-          {% for img in floor.images.all %}
+          {% for img in floor.floorimage_set.all %}
             <div class="carousel-item {% if forloop.first %}active{% endif %}">
-              <img src="{{ img.image.url }}" class="d-block w-100 floor-photo" alt="Фото этажа {{ floor.number }}">
+              <img src="{{ img.image.url }}" class="d-block w-100 floor-photo" alt="Фото {{ forloop.counter }}">
             </div>
           {% empty %}
             <div class="carousel-item active">
-              <img src="{% static 'reviews/img/placeholder-floor.jpg' %}" class="d-block w-100 floor-photo" alt="Заглушка">
+              <img src="{% static 'reviews/img/placeholder.jpg' %}" class="d-block w-100 floor-photo" alt="Нет фото">
             </div>
           {% endfor %}
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#floorCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Previous</span>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#floorCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Next</span>
         </button>
       </div>
 
-      <!-- Header and action -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <!-- Title & action -->
+      <div class="mt-3 d-flex justify-content-between align-items-center">
         <div>
           <h2 class="mb-1">{{ floor.name }}</h2>
           <p class="text-muted mb-0">{{ floor.description }}</p>
         </div>
         <div>
-          <button class="btn btn-primary" id="open-review-modal">Оставить отзыв</button>
+          {% if user.is_authenticated %}
+            <button class="btn btn-primary btn-lg rounded-pill" data-bs-toggle="modal" data-bs-target="#reviewModal">Оставить отзыв</button>
+          {% else %}
+            <button class="btn btn-outline-primary btn-lg rounded-pill" id="need-login-btn">Оставить отзыв</button>
+          {% endif %}
         </div>
       </div>
 
       <!-- Reviews list -->
-      <h5 class="mt-4">Отзывы ({{ reviews.count }})</h5>
-      <div id="reviews-list">
-        {% for r in reviews %}
-          <div class="card mb-2">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <strong>{{ r.author }}</strong>
-                <small class="text-muted">{{ r.created_at|date:"d.m.Y H:i" }}</small>
+      <div class="mt-4">
+        <h5>Отзывы</h5>
+        <div class="reviews-list">
+          {% for review in floor.reviews.all|dictsortreversed:"created_at" %}
+            <div class="card review-card my-2 p-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-bold">{{ review.author_username|default:review.author }}</div>
+                  <small class="text-muted">{{ review.created_at }}</small>
+                </div>
+                <div class="rating">Рейтинг: {{ review.rating }}/5</div>
               </div>
-              <div class="my-2">Рейтинг: <span class="fw-bold">{{ r.rating }}/5</span></div>
-              <div>{{ r.text|linebreaksbr }}</div>
-              {% if r.admin_response %}
-                <div class="alert alert-light mt-2">Ответ администрации: {{ r.admin_response }}</div>
+              <div class="mt-2 review-text">{{ review.text }}</div>
+              {% if review.admin_response %}
+                <div class="admin-response mt-2 p-2 rounded" title="Ответ администрации">{{ review.admin_response }}</div>
               {% endif %}
             </div>
-          </div>
-        {% empty %}
-          <p class="text-muted">Пока нет отзывов — будь первым!</p>
-        {% endfor %}
+          {% empty %}
+            <p class="text-muted">Пока нет отзывов — будь первым!</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 d-none d-lg-block">
+      <!-- Side panel with floor info / rating (optional) -->
+      <div class="sticky-top" style="top:100px;">
+        <div class="card p-3 mb-3">
+          <h6>Рейтинг этажа</h6>
+          <div class="display-6">{{ floor.get_average_rating|default:"—" }}</div>
+          <small class="text-muted">Основано на отзывах</small>
+        </div>
+        <div class="card p-3">
+          <h6>Информация</h6>
+          <p class="mb-0 text-muted small">Здесь можно разместить контакты, часы работы магазинов и т.д.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -72,7 +90,7 @@
   {% for f in floors %}
     <a href="{% url 'reviews:floor_detail' number=f.number %}"
        class="elevator-btn {% if f.number == floor.number %}active{% endif %}"
-       data-number="{{ f.number }}">
+       onclick="goToFloor('{% url 'reviews:floor_detail' number=f.number %}', {{ floor.number }}, {{ f.number }}); return false;">
       {% if f.number < 0 %}B{% else %}{{ f.number }}{% endif %}
     </a>
   {% endfor %}
@@ -80,23 +98,51 @@
 
 <!-- Review Modal (Bootstrap) -->
 <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" id="reviewForm">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title">Оставить отзыв о {{ floor.name }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-        </div>
-        <div class="modal-body">
-          {{ form.as_p }}
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Отправить</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-        </div>
-      </form>
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content p-3" method="post" action="{% url 'reviews:add_review' %}">
+      {% csrf_token %}
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="modal-title mb-0">Оставить отзыв</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <input type="hidden" name="floor_id" value="{{ floor.id }}">
+
+      <div class="mb-3">
+        <label class="form-label">Рейтинг</label>
+        <select name="rating" class="form-select">
+          <option value="5">5 — Отлично</option>
+          <option value="4">4 — Хорошо</option>
+          <option value="3">3 — Нормально</option>
+          <option value="2">2 — Плохо</option>
+          <option value="1">1 — Очень плохо</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Отзыв</label>
+        <textarea name="text" class="form-control review-textarea" rows="5" placeholder="Ваш отзыв…"></textarea>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary rounded-pill">Отправить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Prompt to login modal -->
+<div class="modal fade" id="loginPromptModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4 text-center">
+      <h5>Чтобы оставить отзыв — войдите или зарегистрируйтесь</h5>
+      <p class="text-muted small">Только зарегистрированные пользователи могут оставлять отзывы.</p>
+      <div class="mt-3">
+        <a href="{% url 'accounts:login' %}" class="btn btn-primary me-2">Войти</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Регистрация</a>
+      </div>
     </div>
   </div>
 </div>
+
 {% endblock %}
